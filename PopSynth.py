@@ -6,47 +6,56 @@ BSEDict = {'xi': 1.0, 'bhflag': 0, 'neta': 0.5, 'windflag': 3, 'wdflag': 1, 'alp
 
 m10 = 85.543645
 m20 = 84.99784
-m30 = 85.543645
+m30 = 5.543645
 
 # Initiate inner binary and tertiary companion
 single_binary   = InitialBinaryTable.InitialBinaries(m1=m10, m2=m20, porb=446.795757, ecc=0.448872, tphysf=13700.0, kstar1=1, kstar2=1, metallicity=0.002)
 single_tertiary = InitialBinaryTable.InitialBinaries(m1=m30, m2=0.1, porb=1e12, ecc=0., tphysf=13700.0, kstar1=1, kstar2=14, metallicity=0.002)
 
 # Set the initial outer orbital parameters
-sep30 = 3e3 # solar radii
+sep30 = 9e3 # solar radii
 ecc3 = 0.
 
 # Evolve tertiary
-bpp_tertiary, bcm_tertiary, initC_tertiary, kick_info_tertiary = Evolve.evolve(initialbinarytable=single_tertiary, BSEDict=BSEDict, dtp=1.)
-print(bcm_tertiary)
+bpp_tertiary, bcm_tertiary, initC_tertiary, kick_info_tertiary = Evolve.evolve(initialbinarytable=single_tertiary, BSEDict=BSEDict, dtp=1)
 
 # Evolve inner binary
-bpp, bcm, initC, kick_info = Evolve.evolve(initialbinarytable=single_binary, BSEDict=BSEDict, dtp=1.)
-
-
-# Wind-mass loss
-bcm['mass_3'] = bcm_tertiary['mass_1']
-bcm['sep3'] = sep30*(m10+m20+m30)/(bcm['mass_1']+bcm['mass_2']+bcm['mass_3'])
+bpp, bcm, initC, kick_info = Evolve.evolve(initialbinarytable=single_binary, BSEDict=BSEDict, dtp=1)
 
 # Set tertiary parameters
+bcm['ecc3'] = ecc3
+bcm['mass_3'] = bcm_tertiary['mass_1']
+bcm['kstar_3'] = bcm_tertiary['kstar_1']
 bcm['rad_3'] = bcm_tertiary['rad_1']
 bcm['q_out'] = bcm['mass_3']/(bcm['mass_1']+bcm['mass_2'])
+bcm['sep3'] = sep30*(m10+m20+m30)/(bcm['mass_1']+bcm['mass_2']+bcm['mass_3'])
 bcm['RRLO_3'] = bcm['rad_3']/(.49*bcm['q_out']**(2/3)/(.6*bcm['q_out']**(2/3)+np.log(1+bcm['q_out']**(1/3))))/bcm['sep3']/(1-ecc3)
-
-# Check for tertiary RLO
-if(len(bcm[bcm['RRLO_3']>1])==0):
-    print("No tertiary RLO")
-else:
-    print(bcm[bcm['RRLO_3']>1])
-
-# Check for dyn. instability
 bcm['Stability'] = bcm['sep3']*(1-ecc3)/bcm['sep']/2.8/((1+bcm['mass_3']/(bcm['mass_1']+bcm['mass_2'])*(1+ecc3)/np.sqrt(1-ecc3)))**(2/5)
 
+# Check for tertiary RLO
+if(len(bcm[bcm['RRLO_3']>1])>0):
+    print("Tertiary RLO")
+
+# Check for dyn. instability
 if(len(bcm[bcm['Stability']<1])>0):
     print("System is not hierarchically stable")
-    print(bcm[bcm['Stability']<1])
-else:
-    print("System remains hierarchically stable")
 
 
-print(kick_info)
+# Check for systems that form an inner DCO that remains stable and not tertiary RLO-filling
+Stability = (len(bcm[bcm['Stability']<1])==0)
+Detached = (len(bcm[bcm['RRLO_3']>1])==0)
+LowMass = (len(bcm[bcm['kstar_3']>=13])==0)
+TCO = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) & (bcm['kstar_3']>=13) &
+          (bcm['kstar_1']<=14) & (bcm['kstar_2']<=14) & (bcm['kstar_3']<=14) & 
+          Stability & Detached]
+DCOLowMass = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) &
+          (bcm['kstar_1']<=14) & (bcm['kstar_2']<=14) & 
+          LowMass & Stability & Detached]
+
+if(len(TCO)>0):
+    print("Triple CO has been formed:")
+    print(TCO[['tphys','kstar_1','kstar_2','kstar_3','mass_1','mass_2','mass_3','sep','sep3','ecc','ecc3']].iloc[0])
+
+if(len(DCOLowMass)>0):
+    print("Inner DCO plus low mass companion have been formed:")
+    print(DCOLowMass[['tphys','kstar_1','kstar_2','kstar_3','mass_1','mass_2','mass_3','sep','sep3','ecc','ecc3']].iloc[0])
