@@ -55,9 +55,9 @@ DCOLowMass = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) &
           (bcm['kstar_1']<=14) & (bcm['kstar_2']<=14) & 
           LowMass & Stability & Detached & (bcm['bin_state']==0)]
 
-if(len(TCO)>0):
+if(len(DCO)>0):
     print("A DCO would have been formed if it was in isolation:")
-    print(TCO[['tphys','kstar_1','kstar_2','mass_1','mass_2','sep','ecc','bin_state']].iloc[0])
+    print(DCO[['tphys','kstar_1','kstar_2','mass_1','mass_2','sep','ecc','bin_state']].iloc[0])
 
 if(len(TCO)>0):
     print("Triple CO has been formed:")
