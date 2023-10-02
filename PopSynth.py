@@ -41,21 +41,28 @@ if(len(bcm[bcm['Stability']<1])>0):
     print("System is not hierarchically stable")
 
 
-# Check for systems that form an inner DCO that remains stable and not tertiary RLO-filling
+# Check for systems that form an isolated DCO, and inner DCO that remains stable and not tertiary RLO-filling
 Stability = (len(bcm[bcm['Stability']<1])==0)
 Detached = (len(bcm[bcm['RRLO_3']>1])==0)
 LowMass = (len(bcm[bcm['kstar_3']>=13])==0)
+
+DCO = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) &
+          (bcm['kstar_1']<=14) & (bcm['kstar_2']<=14) & (bcm['bin_state']==0)]
 TCO = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) & (bcm['kstar_3']>=13) &
           (bcm['kstar_1']<=14) & (bcm['kstar_2']<=14) & (bcm['kstar_3']<=14) & 
-          Stability & Detached]
+          Stability & Detached & (bcm['bin_state']==0)]
 DCOLowMass = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) &
           (bcm['kstar_1']<=14) & (bcm['kstar_2']<=14) & 
-          LowMass & Stability & Detached]
+          LowMass & Stability & Detached & (bcm['bin_state']==0)]
+
+if(len(TCO)>0):
+    print("A DCO would have been formed if it was in isolation:")
+    print(TCO[['tphys','kstar_1','kstar_2','mass_1','mass_2','sep','ecc','bin_state']].iloc[0])
 
 if(len(TCO)>0):
     print("Triple CO has been formed:")
-    print(TCO[['tphys','kstar_1','kstar_2','kstar_3','mass_1','mass_2','mass_3','sep','sep3','ecc','ecc3']].iloc[0])
+    print(TCO[['tphys','kstar_1','kstar_2','kstar_3','mass_1','mass_2','mass_3','sep','sep3','ecc','ecc3','bin_state']].iloc[0])
 
 if(len(DCOLowMass)>0):
     print("Inner DCO plus low mass companion have been formed:")
-    print(DCOLowMass[['tphys','kstar_1','kstar_2','kstar_3','mass_1','mass_2','mass_3','sep','sep3','ecc','ecc3']].iloc[0])
+    print(DCOLowMass[['tphys','kstar_1','kstar_2','kstar_3','mass_1','mass_2','mass_3','sep','sep3','ecc','ecc3','bin_state']].iloc[0])
