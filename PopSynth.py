@@ -6,7 +6,7 @@ BSEDict = {'xi': 1.0, 'bhflag': 0, 'neta': 0.5, 'windflag': 3, 'wdflag': 1, 'alp
 
 m10 = 85.543645
 m20 = 84.99784
-m30 = 5.543645
+m30 = 25.543645
 
 # Initiate inner binary and tertiary companion
 single_binary   = InitialBinaryTable.InitialBinaries(m1=m10, m2=m20, porb=446.795757, ecc=0.448872, tphysf=13700.0, kstar1=1, kstar2=1, metallicity=0.002)
@@ -46,6 +46,8 @@ Stability = (len(bcm[bcm['Stability']<1])==0)
 Detached = (len(bcm[bcm['RRLO_3']>1])==0)
 LowMass = (len(bcm[bcm['kstar_3']>=13])==0)
 
+SMe = bcm[(bcm['bin_state']==1) & (bcm['merger_type']!='1414') & (bcm['merger_type']!='1313') & 
+          (bcm['merger_type']!='1314') & (bcm['merger_type']!='1413') & Stability & Detached]
 DCO = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) &
           (bcm['kstar_1']<=14) & (bcm['kstar_2']<=14) & (bcm['bin_state']==0)]
 TCO = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) & (bcm['kstar_3']>=13) &
@@ -54,6 +56,10 @@ TCO = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) & (bcm['kstar_3']>=13) &
 DCOLowMass = bcm[(bcm['kstar_1']>=13) & (bcm['kstar_2']>=13) &
           (bcm['kstar_1']<=14) & (bcm['kstar_2']<=14) & 
           LowMass & Stability & Detached & (bcm['bin_state']==0)]
+
+if(len(SMe)>0):
+    print("A stellar merger occurs:")
+    print(SMe[['tphys','kstar_1','kstar_2','mass_1','mass_2','sep','ecc','bin_state']].iloc[0])
 
 if(len(DCO)>0):
     print("A DCO would have been formed if it was in isolation:")
