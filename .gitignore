@@ -1,2 +1,7 @@
 
 *.99
+*.h5
+COMPAS*
+delete.txt
+*.pyc
+.DS_Store
