@@ -5,3 +5,4 @@ COMPAS*
 delete.txt
 *.pyc
 .DS_Store
+PopSynth.py
